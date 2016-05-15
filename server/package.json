@@ -1,14 +1,15 @@
 {
-	"name": "langauge-server-example",
-	"description": "Example implementation of a language server in node.",
+	"name": "clojure-langauge-server",
+	"description": "Clojure language server implemented in node.",
 	"version": "0.0.1",
-	"author": "Microsoft Corporation",
+	"author": "James Norton",
 	"license": "MIT",
 	"engines": {
 		"node": "*"
 	},
 	"dependencies": {
-		"vscode-languageserver": "^1.4.1"
+		"vscode-languageserver": "^1.4.1",
+		"jg-nrepl-client": "0.2.3"
 	},
 	"devDependencies": {
 		"typescript": "^1.8.9"

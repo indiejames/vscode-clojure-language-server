@@ -11,9 +11,23 @@ import {
 	InitializeParams, InitializeResult, TextDocumentIdentifier,
 	CompletionItem, CompletionItemKind
 } from 'vscode-languageserver';
+import {spawn} from 'child_process';
+import nrepl_client = require('jg-nrepl-client');
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+
+// Create an nREPL session to do Clojure things
+// TODO add these to config
+let repl_port = 7477;
+let env = {};
+let cwd = ".";
+let repl = spawn('/usr/local/bin/lein', ["with-profile", "+debug-repl", "repl", ":headless", ":port", "" + repl_port], {cwd: cwd, env: env});
+
+repl.stdout.on('data', (data) => {
+	var output = '' + data;
+	console.log(output);
+});
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
@@ -31,7 +45,7 @@ connection.onInitialize((params): InitializeResult => {
 		capabilities: {
 			// Tell the client that the server works in FULL text document sync mode
 			textDocumentSync: documents.syncKind,
-			// Tell the client that the server support code complete
+			// Tell the client that the server supports code complete
 			completionProvider: {
 				resolveProvider: true
 			}
@@ -42,7 +56,7 @@ connection.onInitialize((params): InitializeResult => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-	validateTextDocument(change.document);
+	validateClojureDocument(change.document);
 });
 
 // The settings interface describe the server relevant settings part
@@ -64,16 +78,17 @@ connection.onDidChangeConfiguration((change) => {
 	let settings = <Settings>change.settings;
 	maxNumberOfProblems = settings.languageServerExample.maxNumberOfProblems || 100;
 	// Revalidate any open text documents
-	documents.all().forEach(validateTextDocument);
+	documents.all().forEach(validateClojureDocument);
 });
 
-function validateTextDocument(textDocument: ITextDocument): void {
+function validateClojureDocument(textDocument: ITextDocument): void {
+	console.log("Validating...");
 	let diagnostics: Diagnostic[] = [];
 	let lines = textDocument.getText().split(/\r?\n/g);
 	let problems = 0;
 	for (var i = 0; i < lines.length && problems < maxNumberOfProblems; i++) {
 		let line = lines[i];
-		let index = line.indexOf('typescript');
+		let index = line.indexOf('clojure');
 		if (index >= 0) {
 			problems++;
 			diagnostics.push({
@@ -82,7 +97,7 @@ function validateTextDocument(textDocument: ITextDocument): void {
 					start: { line: i, character: index},
 					end: { line: i, character: index + 10 }
 				},
-				message: `${line.substr(index, 10)} should be spelled TypeScript`,
+				message: `${line.substr(index, 10)} should be spelled Clojure`,
 				source: 'ex'
 			});
 		}
@@ -98,33 +113,42 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion((textDocumentPosition: TextDocumentIdentifier): CompletionItem[] => {
+connection.onCompletion((textDocumentPosition: TextDocumentIdentifier): Promise<CompletionItem[]> => {
 	// The pass parameter contains the position of the text document in 
 	// which code complete got requested. For the example we ignore this
 	// info and always provide the same completion items.
-	return [
-		{
-			label: 'TypeScript',
-			kind: CompletionItemKind.Text,
-			data: 1
-		},
-		{
-			label: 'JavaScript',
-			kind: CompletionItemKind.Text,
-			data: 2
-		}
-	]
+	
+	const p: Promise<CompletionItem[]> = new Promise (
+   (resolve: (comp: CompletionItem[])=>void, reject: (str: string)=>void) => {
+      let a = [
+					{
+						label: 'Clojure',
+						kind: CompletionItemKind.Text,
+						data: 1
+					},
+					{
+						label: 'Elixir',
+						kind: CompletionItemKind.Text,
+						data: 2
+					}
+				]
+      resolve(a);
+   }
+ );
+ 
+ return p;
+	
 });
 
 // This handler resolve additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 	if (item.data === 1) {
-		item.detail = 'TypeScript details',
-		item.documentation = 'TypeScript documentation'
+		item.detail = 'Clojure details',
+		item.documentation = 'Clojure documentation'
 	} else if (item.data === 2) {
-		item.detail = 'JavaScript details',
-		item.documentation = 'JavaScript documentation'
+		item.detail = 'Elixir details',
+		item.documentation = 'Elixir documentation'
 	}
 	return item;
 });

@@ -1,2 +1,2 @@
-# vscode-languageserver-node-example
-Sample language server implemented in Node
+# vscode-clojure-languageserver
+Clojure language server implemented in Node
