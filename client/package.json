@@ -39,6 +39,8 @@
 		"vscode": "^0.11.0"
 	},
 	"dependencies": {
-		"vscode-languageclient": "^1.4.2"
+		"vscode-languageclient": "^1.4.2",
+		"jg-nrepl-client": "0.2.3",
+		"jsedn": "0.3.5"
 	}
 }

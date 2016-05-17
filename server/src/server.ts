@@ -12,23 +12,23 @@ import {
 	CompletionItem, CompletionItemKind
 } from 'vscode-languageserver';
 import {spawn} from 'child_process';
+import {readFileSync} from 'fs';
+import {basename, dirname, join} from 'path';
 import nrepl_client = require('jg-nrepl-client');
+
+var isInitialized: boolean = false;
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+var rconn;
 
 // Create an nREPL session to do Clojure things
 // TODO add these to config
 let repl_port = 7477;
-let env = {};
-let cwd = ".";
-let repl = spawn('/usr/local/bin/lein', ["with-profile", "+debug-repl", "repl", ":headless", ":port", "" + repl_port], {cwd: cwd, env: env});
 
-repl.stdout.on('data', (data) => {
-	var output = '' + data;
-	console.log(output);
-});
 
+
+	
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments = new TextDocuments();
@@ -46,9 +46,9 @@ connection.onInitialize((params): InitializeResult => {
 			// Tell the client that the server works in FULL text document sync mode
 			textDocumentSync: documents.syncKind,
 			// Tell the client that the server supports code complete
-			completionProvider: {
-				resolveProvider: true
-			}
+			// completionProvider: {
+			// 	resolveProvider: true
+			// }
 		}
 	}
 });
@@ -113,45 +113,58 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion((textDocumentPosition: TextDocumentIdentifier): Promise<CompletionItem[]> => {
-	// The pass parameter contains the position of the text document in 
-	// which code complete got requested. For the example we ignore this
-	// info and always provide the same completion items.
+// connection.onCompletion((textDocumentPosition: TextDocumentIdentifier): Promise<CompletionItem[]> => {
+// 	// The pass parameter contains the position of the text document in 
+// 	// which code complete got requested. For the example we ignore this
+// 	// info and always provide the same completion items.
 	
-	const p: Promise<CompletionItem[]> = new Promise (
-   (resolve: (comp: CompletionItem[])=>void, reject: (str: string)=>void) => {
-      let a = [
-					{
-						label: 'Clojure',
-						kind: CompletionItemKind.Text,
-						data: 1
-					},
-					{
-						label: 'Elixir',
-						kind: CompletionItemKind.Text,
-						data: 2
-					}
-				]
-      resolve(a);
-   }
- );
+// 	let uri =  textDocumentPosition.uri;
+// 	// var fileContents = readFileSync(uri);
+//   // var regex = /\(ns\s+?(.*?)(\s|\))/;
+// 	// var ns = regex.exec(fileContents.toString())[1];
+	
+// 	const p: Promise<CompletionItem[]> = new Promise (
+//    (resolve: (comp: CompletionItem[])=>void, reject: (str: string)=>void) => {
+		 
+// 		//  rconn.eval("(require '" + ns + ")", (err: any, result: any) => {
+// 		// 		// TODO handle errors here
+				
+// 		// 		// Get the completions using Compliment
+// 		// 		rconn.eval("(completions \"" +   "\"" + "{:tag-candidates true})")
+// 		// 		//console.log(result);
+// 		// 	});
+//       let a = [
+// 					{
+// 						label: 'Clojure',
+// 						kind: CompletionItemKind.Text,
+// 						data: 1
+// 					},
+// 					{
+// 						label: 'Elixir',
+// 						kind: CompletionItemKind.Text,
+// 						data: 2
+// 					}
+// 				]
+//       resolve(a);
+//    }
+//  );
  
- return p;
+//  return p;
 	
-});
+// });
 
 // This handler resolve additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-	if (item.data === 1) {
-		item.detail = 'Clojure details',
-		item.documentation = 'Clojure documentation'
-	} else if (item.data === 2) {
-		item.detail = 'Elixir details',
-		item.documentation = 'Elixir documentation'
-	}
-	return item;
-});
+// connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+// 	if (item.data === 1) {
+// 		item.detail = 'Clojure details',
+// 		item.documentation = 'Clojure documentation'
+// 	} else if (item.data === 2) {
+// 		item.detail = 'Elixir details',
+// 		item.documentation = 'Elixir documentation'
+// 	}
+// 	return item;
+// });
 
 /*
 connection.onDidOpenTextDocument((params) => {
