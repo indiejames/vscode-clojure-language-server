@@ -10,7 +10,7 @@ import { workspace, languages, CompletionItemProvider, Disposable, ExtensionCont
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 import nrepl_client = require('jg-nrepl-client');
 import {spawn} from 'child_process';
-import {ClojureCompletionItemProvider} from './ClojureCompletionProvider';
+import {ClojureCompletionItemProvider} from './clojureCompletionItemProvider';
 import edn = require('jsedn');
 
 export function activate(context: ExtensionContext) {
