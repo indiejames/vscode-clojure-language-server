@@ -13,18 +13,10 @@ export class ClojureCompletionItemProvider implements vscode.CompletionItemProvi
     this.connection = conn;
   }
   
-  private completionsContext(document: vscode.TextDocument, position: vscode.Position) : string {
-    let context = `(defn fun
-     [yyy]
-     __prefix__)`
-    return context;
-  }
-  
   private completionsCode(document: vscode.TextDocument, position: vscode.Position): string {
     let fileContents = document.getText();
     var regex = /\(ns\s+?(.*?)(\s|\))/;
     var ns = regex.exec(fileContents.toString())[1];
-    // Get the term
     let prefixRange = document.getWordRangeAtPosition(position);
     let prefix = document.getText(prefixRange);
     let offset = document.offsetAt(position) - 1;
@@ -74,38 +66,15 @@ export class ClojureCompletionItemProvider implements vscode.CompletionItemProvi
       let command = self.completionsCode(document, position);
 
       // Call Compliment to get the completions
-      //self.connection.eval("(use '" + ns  + ")", (err: any, result: any) => {
-        
-        // TODO add context
-        self.connection.eval(command, (cErr: any, cResult: any) => {
-          if (cResult) {
-            let results = CompletionUtils.complimentResultsToCompletionItems(cResult[0]["value"]);
-            
-            resolve(results);
-          } else {
-            reject(cErr);
-          }
-        });
-			//});
-      
-      // let a = [
-      //   new vscode.CompletionItem("Clojure"),
-      //   new vscode.CompletionItem("Elixir")  
-      // ];
-      
-      // let aa = [
-			// 		{
-			// 			label: 'Clojure',
-			// 			kind: vscode.CompletionItemKind.Text,
-			// 			data: 1
-			// 		},
-			// 		{
-			// 			label: 'Elixir',
-			// 			kind: vscode.CompletionItemKind.Text,
-			// 			data: 2
-			// 		}
-			// 	]
-      // resolve(a);
+      self.connection.eval(command, (cErr: any, cResult: any) => {
+        if (cResult) {
+          let results = CompletionUtils.complimentResultsToCompletionItems(cResult[0]["value"]);
+          
+          resolve(results);
+        } else {
+          reject(cErr);
+        }
+      });
     });
   }
 }
