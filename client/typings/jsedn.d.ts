@@ -16,5 +16,7 @@ declare module "jsedn" {
 	export function parse(val: string) : List | Vector | Set | Map;
 	
 	export function kw(val: string) : Keyword; 
+	
+	export function toJS(val: any): string;
 }
 

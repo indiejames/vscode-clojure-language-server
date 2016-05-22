@@ -6,7 +6,7 @@
 
 import * as path from 'path';
 
-import { workspace, languages, Disposable, ExtensionContext } from 'vscode';
+import { workspace, languages, CompletionItemProvider, Disposable, ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 import nrepl_client = require('jg-nrepl-client');
 import {spawn} from 'child_process';
@@ -22,6 +22,9 @@ export function activate(context: ExtensionContext) {
 	let env = {};
 	let cwd = "/Users/jnorton/Clojure/repl_test";
 	let repl = spawn('/usr/local/bin/lein', ["repl", ":headless", ":port", "" + repl_port], {cwd: cwd, env: env});
+	
+	// use default completions if none are available from Compliment
+	//context.subscriptions.push(languages.registerCompletionItemProvider("clojure", new CompletionItemProvider()))
 
 	repl.stderr.on('data', (data) => {
 		var output = '' + data;
@@ -51,8 +54,8 @@ export function activate(context: ExtensionContext) {
 	// The debug options for the server
 	let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 	
-	// If the extension is launch in debug mode the debug server options are use
-	// Otherwise the run options are used
+	// If the extension is launched in debug mode the debug server options are used.
+	// Otherwise the run options are used.
 	let serverOptions: ServerOptions = {
 		run : { module: serverModule, transport: TransportKind.ipc },
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
