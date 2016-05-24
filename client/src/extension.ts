@@ -11,6 +11,7 @@ import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, T
 import nrepl_client = require('jg-nrepl-client');
 import {spawn} from 'child_process';
 import {ClojureCompletionItemProvider} from './clojureCompletionItemProvider';
+import {ClojureDefinitionProvider} from './clojureDefinitionProvider';
 import edn = require('jsedn');
 
 export function activate(context: ExtensionContext) {
@@ -41,6 +42,7 @@ export function activate(context: ExtensionContext) {
 			rconn = nrepl_client.connect({port: repl_port, host: "127.0.0.1", verbose: false});
 			rconn.eval("(use 'compliment.core)", (err: any, result: any) => {
 				context.subscriptions.push(languages.registerCompletionItemProvider("clojure", new ClojureCompletionItemProvider(rconn)));
+				context.subscriptions.push(languages.registerDefinitionProvider("clojure", new ClojureDefinitionProvider(rconn)));
 				// TODO move code into here so we can wait for this eval to finish
 				console.log("Namespace loaded");
 			});

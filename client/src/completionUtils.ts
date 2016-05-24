@@ -33,35 +33,38 @@ export namespace CompletionUtils {
     * Escapes the Clojure code and places it in quotations.
     * */ 
   export function complimentResultsToCompletionItems(completionsEdn: string): CompletionItem[] {
-    var res = edn.parse(completionsEdn);
-    let results = res.each((candidateMap: any) => {
-      let candidate: string = candidateMap.at(edn.kw(":candidate"));
-      if (candidate == "false") {
-        console.log("false");
-      }
-      let cType: edn.Keyword = candidateMap.at(edn.kw(":type"));
-      var type = edn.toJS(cType);
-      type = type.replace(":","");
-      var doc:  string = candidateMap.at(edn.kw(":docs"));
-      doc = doc.replace(/\\n/g,"\n");
-      var ns: string = "";
-      if (candidateMap.exists(edn.kw(":ns"))) {
-        ns = candidateMap.at(edn.kw(":ns"));
-      }
-      
-      let ci =  new CompletionItem(candidate);
-      ci.kind = typeKeywordToCompletionItemKind(cType);
-      if (doc != "") {
-        ci.documentation = doc;
-      }
-      if (ns != "") {
-        ci.detail = `${type} ${ns}/${candidate}`;  
-      } else {
-        ci.detail = `${type} ${candidate}`;
-      }
-      
-      return ci;
-    });       
+    var results = [];
+    if (completionsEdn != null) {
+      var res = edn.parse(completionsEdn);
+      results = res.each((candidateMap: any) => {
+        let candidate: string = candidateMap.at(edn.kw(":candidate"));
+        if (candidate == "false") {
+          console.log("false");
+        }
+        let cType: edn.Keyword = candidateMap.at(edn.kw(":type"));
+        var type = edn.toJS(cType);
+        type = type.replace(":","");
+        var doc:  string = candidateMap.at(edn.kw(":docs"));
+        doc = doc.replace(/\\n/g,"\n");
+        var ns: string = "";
+        if (candidateMap.exists(edn.kw(":ns"))) {
+          ns = candidateMap.at(edn.kw(":ns"));
+        }
+        
+        let ci =  new CompletionItem(candidate);
+        ci.kind = typeKeywordToCompletionItemKind(cType);
+        if (doc != "") {
+          ci.documentation = doc;
+        }
+        if (ns != "") {
+          ci.detail = `${type} ${ns}/${candidate}`;  
+        } else {
+          ci.detail = `${type} ${candidate}`;
+        }
+        
+        return ci;
+      });     
+    }
    return results;  
   }
 }  

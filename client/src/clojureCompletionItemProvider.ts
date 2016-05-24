@@ -35,10 +35,10 @@ export class ClojureCompletionItemProvider implements vscode.CompletionItemProvi
      (defn find-high-level-form
       [src position]
       (let[rdr (make-proxy (java.io.StringReader. src) (atom 0))]
-       (loop [form (read rdr) pos @rdr]
+       (loop [form (binding [*read-eval* false] (read rdr)) pos @rdr]
         (if (> pos position)
          form
-         (recur (read rdr) @rdr)))))
+         (recur (binding [*read-eval* false] (read rdr)) @rdr)))))
        
      (let [src ${src}
            pos ${offset}
@@ -59,18 +59,21 @@ export class ClojureCompletionItemProvider implements vscode.CompletionItemProvi
   
 	public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.CompletionItem[]> {
     let self = this;
+    
     return new Promise<vscode.CompletionItem[]>((resolve, reject) => {
       // Get the namespace for this document
       
-      //let command = "(completions \"" + term +  "\" {:tag-candidates true :context " + ctx + "})";
       let command = self.completionsCode(document, position);
 
       // Call Compliment to get the completions
       self.connection.eval(command, (cErr: any, cResult: any) => {
-        if (cResult) {
+        if (cResult && cResult.length > 0) {
           let results = CompletionUtils.complimentResultsToCompletionItems(cResult[0]["value"]);
-          
-          resolve(results);
+          if (results != null) {
+            resolve(results);
+          } else {
+            resolve([]);
+          }
         } else {
           reject(cErr);
         }
